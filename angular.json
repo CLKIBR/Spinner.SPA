@@ -38,9 +38,11 @@
               "src/assets"
             ],
             "styles": [
-              "src/scss/styles.scss"
+              "src/scss/styles.scss",
+              "node_modules/alertifyjs/build/css/alertify.css",
+              "node_modules/alertifyjs/build/css/themes/default.css"
             ],
-            "scripts": [],
+            "scripts": ["node_modules/alertifyjs/build/alertify.js"],
             "allowedCommonJsDependencies": [],
             "stylePreprocessorOptions": {
               "sass": {

@@ -1,11 +1,20 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from 'src/app/service/auth.service';
 
 import {
+  AlertModule,
   AvatarComponent,
   BadgeComponent,
   BreadcrumbRouterComponent,
+  ButtonDirective,
+  ButtonModule,
+  CardBodyComponent,
+  CardComponent,
+  CardGroupComponent,
+  CardModule,
+  ColComponent,
   ColorModeService,
   ContainerComponent,
   DropdownComponent,
@@ -14,20 +23,44 @@ import {
   DropdownItemDirective,
   DropdownMenuDirective,
   DropdownToggleDirective,
+  FormControlDirective,
+  FormDirective,
+  FormModule,
+  GridModule,
   HeaderComponent,
   HeaderNavComponent,
   HeaderTogglerDirective,
+  InputGroupComponent,
+  InputGroupTextDirective,
+  ModalModule,
   NavItemComponent,
   NavLinkDirective,
-  SidebarToggleDirective
+  ProgressBarDirective,
+  ProgressComponent,
+  RowComponent,
+  SidebarToggleDirective,
+  TableModule,
+  TextColorDirective,
+  ThemeDirective,
+  UtilitiesModule
 } from '@coreui/angular';
 
 import { IconDirective } from '@coreui/icons-angular';
+import { FormsModule, NgModel, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
-    selector: 'app-default-header',
-    templateUrl: './default-header.component.html',
-  imports: [ContainerComponent, HeaderTogglerDirective, SidebarToggleDirective, IconDirective, HeaderNavComponent, NavItemComponent, NavLinkDirective, RouterLink, RouterLinkActive, NgTemplateOutlet, BreadcrumbRouterComponent, DropdownComponent, DropdownToggleDirective, AvatarComponent, DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
+  selector: 'app-default-header',
+  templateUrl: './default-header.component.html',
+  standalone: true,
+  imports: [ContainerComponent, HeaderTogglerDirective, SidebarToggleDirective, IconDirective,
+    HeaderNavComponent, NavItemComponent, NavLinkDirective, RouterLink, RouterLinkActive, NgTemplateOutlet,
+    ThemeDirective, DropdownComponent, DropdownToggleDirective, TextColorDirective,
+    AvatarComponent, DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent,
+    DropdownDividerDirective,ContainerComponent, TextColorDirective, IconDirective, CommonModule, FormsModule,
+    AlertModule, GridModule, FormModule, CardModule, TableModule, UtilitiesModule, HttpClientModule,
+    ReactiveFormsModule, ModalModule, ButtonModule],
+  providers: [AuthService,NgModel]
 })
 export class DefaultHeaderComponent extends HeaderComponent {
 
@@ -45,8 +78,12 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor() {
+  constructor(private authService: AuthService) {
     super();
+  }
+
+  logOut() {
+    this.authService.logOut();
   }
 
   sidebarId = input('sidebar1');

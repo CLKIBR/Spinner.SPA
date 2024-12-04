@@ -1,0 +1,288 @@
+<c-container breakpoint="xxl">
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'warning', width: 5}}" class="mb-3">
+
+                <c-card-header>
+                    <h5 cModalTitle>Malzeme Numara Tanımı</h5>
+                    <hr />
+                    <form cForm>
+                        <div class="d-grid gap-2 d-flex float-start mb-2">
+                            <div>
+                                <input cFormControl type="text" name="MalGroupNameFilter" [(ngModel)]="MalGroupNameFilter"
+                                    (ngModelChange)="filterData()" placeholder="Grub Adı">
+                            </div>
+                            <div>
+                                <input cFormControl type="text" name="MalNumberNameFilter" [(ngModel)]="MalNumberNameFilter"
+                                    (ngModelChange)="filterData()" placeholder="Numara Değeri">
+                            </div>
+                            <div>
+                                <input cFormControl type="text" name="MalDescriptionCodeFilter" [(ngModel)]="MalDescriptionCodeFilter"
+                                    (ngModelChange)="filterData()" placeholder="Number Birim">
+                            </div>
+                            <div>
+                                <button cButton color="info" variant="outline" (click)="filterClean()">Temizle</button>
+                            </div>
+                        </div>
+                    </form>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <ng-container *ngTemplateOutlet="MalNumberTbl"></ng-container>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton color="success" variant="outline"
+                            (click)="toggleNewMalNumberModal()">Ekle</button>
+
+                        <button cButton color="warning" variant="outline" (click)="editMalNumber()"
+                            [disabled]="!selectedMalNumber">
+                            Değiştir
+                        </button>
+
+                        <button cButton color="danger" variant="outline"
+                            (click)="deleteConfirmation(selectedMalNumber || null)" [disabled]="!selectedMalNumber">
+                            Sil
+                        </button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-container>
+
+<c-modal [(visible)]="isDeleteModalVisible" [backdrop]="true" alignment="center" centered closeable>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'danger', width: 5}}" class="mb-3">
+                <c-card-header>
+                    <h5 cModalTitle>Silme İşlemi</h5>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <p>
+                        <strong cTextColor="danger">{{ malNumberToDelete?.name }}</strong> tipini silmek istiyor musunuz?
+                    </p>
+                    <p>Devam etmek için şu soruyu cevaplayın:</p>
+                    <p>
+                        <strong>{{ randomNumber1 }} {{ randomOperator }} {{ randomNumber2 }} = ?</strong>
+                    </p>
+                    <input type="number" class="form-control" [(ngModel)]="userAnswer" (input)="checkAnswer()"
+                        placeholder="Cevabınızı girin" />
+                    <div *ngIf="!isCorrectAnswer && userAnswer !== null">
+                        <small cTextColor="danger">Cevap doğru değil!</small>
+                    </div>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton color="danger" variant="outline" [disabled]="!isCorrectAnswer"
+                            (click)="confirmDelete()">Evet
+                        </button>
+                        <button cButton color="secondary" variant="outline" (click)="cancelDelete()">Hayır</button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-modal>
+
+<c-modal [(visible)]="isEditMode" [backdrop]="true" alignment="center" centered closeable>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'warning', width: 5}}" class="mb-3">
+                <c-card-header>
+                    <h5 cModalTitle>Malzeme Tipi Düzenleme</h5>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <form [formGroup]="malNumberForm" (ngSubmit)="onSubmit()">
+                        <div class="mb-3">
+                            <select cSelect id="malGroupId" class="form-control" formControlName="malGroupId" (change)="onMalGroupChange($event)">
+                                <option *ngFor="let maltype of malGroups" [value]="maltype.id">
+                                    {{ maltype.name }}
+                                </option>
+                            </select>
+                            <!-- Hata Mesajı -->
+                            <div *ngIf="malNumberForm.get('malGroupId')?.hasError('required') && (malNumberForm.get('malGroupId')?.touched || submitted)"
+                                class="error-message">
+                                <strong cTextColor="danger">Grub Adı</strong> seçilmesi zorunludur.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <input type="text" id="name" class="form-control" formControlName="name"
+                                placeholder="Koleksiyon Adı" />
+                            <div *ngIf="malNumberForm.get('name')?.hasError('required') && malNumberForm.get('name')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Koleksiyon Adı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <select cSelect (change)="onMalGroupChange($event)">
+                                <option>
+                                    {{selectedCode}}
+                                </option>
+                            </select>
+                            <!-- Hata Mesajı -->
+                            <div *ngIf="malNumberForm.get('malGroupId')?.hasError('required') && (malNumberForm.get('malGroupId')?.touched || submitted)"
+                                class="error-message">
+                                <strong cTextColor="danger">Grub Adı</strong> seçilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="number" id="amount" class="form-control" formControlName="amount"
+                                placeholder="Kullanım Miktarı" />
+                            <div *ngIf="malNumberForm.get('amount')?.hasError('required') && malNumberForm.get('amount')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Kullanım Miktarı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="description" class="form-control" formControlName="description"
+                                placeholder="Açıklama giriniz."></textarea>
+                            <div *ngIf="malNumberForm.get('description')?.hasError('required') && malNumberForm.get('description')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Açıklama</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <!-- <h6>{{malNumberForm.value | json}}</h6>
+                        <h6>{{malNumberForm.status | json}}</h6> -->
+                    </form>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton type="submit" [disabled]="malNumberForm.invalid" color="success"
+                            variant="outline" (click)="saveChanges()">Kaydet</button>
+                        <button cButton color="secondary" variant="outline"
+                            (click)="openAddMalNumberModal()">İptal</button>
+                    </div>
+                </c-card-footer>
+
+            </c-card>
+        </c-col>
+    </c-row>
+</c-modal>
+
+<c-modal [(visible)]="visible" [backdrop]="true" alignment="center" centered closeable>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{ top: { color: 'success', width: 5 } }" class="mb-3">
+                <c-card-header>
+                    <h5 cModalTitle>Yeni Malzeme Numara Ekle</h5>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <form [formGroup]="malNumberForm" (ngSubmit)="onSubmit()">
+                        <div class="mb-3">
+                            <select cSelect id="malGroupId" class="form-control" formControlName="malGroupId" (change)="onMalGroupChange($event)">
+                                <option *ngFor="let malGroup of malGroups" [value]="malGroup.id" >
+                                    {{ malGroup.name }}
+                                </option>
+                            </select>
+                            <!-- Hata Mesajı -->
+                            <div *ngIf="malNumberForm.get('malGroupId')?.hasError('required') && (malNumberForm.get('malGroupId')?.touched || submitted)"
+                                class="error-message">
+                                <strong cTextColor="danger">Grub Adı</strong> seçilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="name" class="form-control" formControlName="name"
+                                placeholder="Numara Değişkeni" />
+                            <div *ngIf="malNumberForm.get('name')?.hasError('required') && malNumberForm.get('name')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Number Değeri</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <select cSelect (change)="onMalGroupChange($event)">
+                                <option>
+                                    {{selectedCode}}
+                                </option>
+                            </select>
+                            <!-- Hata Mesajı -->
+                            <div *ngIf="malNumberForm.get('malGroupId')?.hasError('required') && (malNumberForm.get('malGroupId')?.touched || submitted)"
+                                class="error-message">
+                                <strong cTextColor="danger">Grub Adı</strong> seçilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="number" id="amount" class="form-control" formControlName="amount"
+                                placeholder="Kullanım Miktarı" />
+                            <div *ngIf="malNumberForm.get('amount')?.hasError('required') && malNumberForm.get('amount')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Kullanım Miktarı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="description" class="form-control" formControlName="description"
+                                placeholder="Açıklama giriniz."></textarea>
+                            <div *ngIf="malNumberForm.get('description')?.hasError('required') && malNumberForm.get('description')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Açıklama</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <!-- <h6>{{malNumberForm.value | json}}</h6>
+                        <h6>{{malNumberForm.status | json}}</h6> -->
+                    </form>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton type="submit" [disabled]="malNumberForm.invalid" color="success"
+                            variant="outline" (click)="saveNewMalNumber()">Kaydet</button>
+                        <button cButton color="secondary" variant="outline" (click)="visible = false">İptal</button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-modal>
+
+
+<ng-template #MalNumberTbl>
+    <table [hover]="true" [responsive]="true" [striped]="true" align="middle" cTable class="mb-0 border">
+        <thead class="text-nowrap text-truncate">
+            <tr>
+                <th class="bg-body-tertiary">Grub Adı</th>
+                <th class="bg-body-tertiary">Numara Değeri</th>
+                <th class="bg-body-tertiary text-center">Numara Birimi</th>
+                <th class="bg-body-tertiary">Kullanım</th>
+                <th class="bg-body-tertiary">Açıklama</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let malNumber of filteredData; trackBy: trackById"
+                [cTableColor]="selectedMalNumber === malNumber.id ? 'warning' : ''" (click)="selectMalNumber(malNumber)">
+                <td>
+                    <div class="fw-semibold">{{ malNumber.malGroupName }}</div>
+                    <div class="small text-body-secondary text-nowrap">
+                        <span>
+                            Ekleme Tarihi: {{ malNumber.createdDate }}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <div class="fw-semibold">{{ malNumber.name }}</div>
+                    <div class="small text-body-secondary text-nowrap">
+                        <span>
+                            Ekleme Tarihi: {{ malNumber.createdDate }}
+                        </span>
+                    </div>
+                </td>
+                <td class="text-center fw-semibold">
+                    <div>{{ malNumber.malDescriptionCode }}</div>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-between">
+                        <div class="float-start">
+                            <strong>{{malNumber.amount}}%</strong>
+                        </div>
+                        <div class="float-end ms-1 text-nowrap">
+                            <small class="text-body-secondary">Depo Kullanım Miktarı</small>
+                        </div>
+                    </div>
+                    <c-progress thin [value]="malNumber.amount" color="success" aria-label="Usage"></c-progress>
+                </td>
+                <td>
+                    <div class="small text-body-secondary">Kullanımda</div>
+                    <div class="text-nowrap">{{ malNumber.description }}</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</ng-template>

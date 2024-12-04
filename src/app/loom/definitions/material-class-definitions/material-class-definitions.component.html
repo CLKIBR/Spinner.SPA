@@ -1,0 +1,293 @@
+<c-container breakpoint="xxl">
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'warning', width: 5}}" class="mb-3">
+
+                <c-card-header>
+                    <h5 cModalTitle>Malzeme Sınıf Tanımı</h5>
+                    <hr />
+                    <form cForm>
+                        <div class="d-grid gap-2 d-flex float-start mb-2">
+                            <div>
+                                <input cFormControl type="text" name="MalTypeNameFilter" [(ngModel)]="MalTypeNameFilter"
+                                    (ngModelChange)="filterData()" placeholder="Tip Adı">
+                            </div>
+                            <div>
+                                <input cFormControl type="text" name="MalClassNameFilter" [(ngModel)]="MalClassNameFilter"
+                                    (ngModelChange)="filterData()" placeholder="Sınıf Adı">
+                            </div>
+                            <div>
+                                <button cButton color="info" variant="outline" (click)="filterClean()">Temizle</button>
+                            </div>
+                        </div>
+                    </form>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <ng-container *ngTemplateOutlet="MalClassTbl"></ng-container>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton color="success" variant="outline"
+                            (click)="toggleNewMalClassModal()">Ekle</button>
+
+                        <button cButton color="warning" variant="outline" (click)="editMalClass()"
+                            [disabled]="!selectedMalClass">
+                            Değiştir
+                        </button>
+
+                        <button cButton color="danger" variant="outline"
+                            (click)="deleteConfirmation(selectedMalClass || null)" [disabled]="!selectedMalClass">
+                            Sil
+                        </button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-container>
+
+<c-modal [(visible)]="isDeleteModalVisible" [backdrop]="true" alignment="center" centered closeable>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'danger', width: 5}}" class="mb-3">
+                <c-card-header>
+                    <h5 cModalTitle>Silme İşlemi</h5>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <p>
+                        <strong cTextColor="danger">{{ malClassToDelete?.name }}</strong> tipini silmek istiyor musunuz?
+                    </p>
+                    <p>Devam etmek için şu soruyu cevaplayın:</p>
+                    <p>
+                        <strong>{{ randomNumber1 }} {{ randomOperator }} {{ randomNumber2 }} = ?</strong>
+                    </p>
+                    <input type="number" class="form-control" [(ngModel)]="userAnswer" (input)="checkAnswer()"
+                        placeholder="Cevabınızı girin" />
+                    <div *ngIf="!isCorrectAnswer && userAnswer !== null">
+                        <small cTextColor="danger">Cevap doğru değil!</small>
+                    </div>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton color="danger" variant="outline" [disabled]="!isCorrectAnswer"
+                            (click)="confirmDelete()">Evet
+                        </button>
+                        <button cButton color="secondary" variant="outline" (click)="cancelDelete()">Hayır</button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-modal>
+
+<c-modal [(visible)]="isEditMode" [backdrop]="true" alignment="center" centered closeable>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'warning', width: 5}}" class="mb-3">
+                <c-card-header>
+                    <h5 cModalTitle>Malzeme Tipi Düzenleme</h5>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <form [formGroup]="malClassForm" (ngSubmit)="onSubmit()">
+                        <div class="mb-3">
+                            <select cSelect id="malTypeId" class="form-control" formControlName="malTypeId">
+                                <option *ngFor="let maltype of malTypes" [value]="maltype.id">
+                                    {{ maltype.name }}
+                                </option>
+                            </select>
+                            <!-- Hata Mesajı -->
+                            <div *ngIf="malClassForm.get('malTypeId')?.hasError('required') && (malClassForm.get('malTypeId')?.touched || submitted)"
+                                class="error-message">
+                                <strong cTextColor="danger">Tip Adı</strong> seçilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="name" class="form-control" formControlName="name"
+                                placeholder="Sınıf Adı" />
+                            <div *ngIf="malClassForm.get('name')?.hasError('required') && malClassForm.get('name')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Sınıf Adı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="code" class="form-control" formControlName="code"
+                                placeholder="Sınıf Kodu" />
+                            <div *ngIf="malClassForm.get('code')?.hasError('required') && malClassForm.get('code')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Sınıf Kodu</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="number" id="amount" class="form-control" formControlName="amount"
+                                placeholder="Kullanım Miktarı" />
+                            <div *ngIf="malClassForm.get('amount')?.hasError('required') && malClassForm.get('amount')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Kullanım Miktarı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="url" class="form-control" formControlName="url" placeholder="Url" />
+                            <div *ngIf="malClassForm.get('url')?.hasError('required') && malClassForm.get('url')?.touched|| submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Url</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="description" class="form-control" formControlName="description"
+                                placeholder="Açıklama giriniz."></textarea>
+                            <div *ngIf="malClassForm.get('description')?.hasError('required') && malClassForm.get('description')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Açıklama</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <h6>{{malClassForm.value | json}}</h6>
+                        <h6>{{malClassForm.status | json}}</h6>
+                    </form>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton type="submit" [disabled]="malClassForm.invalid" color="success"
+                            variant="outline" (click)="saveChanges()">Kaydet</button>
+                        <button cButton color="secondary" variant="outline"
+                            (click)="openAddMalClassModal()">İptal</button>
+                    </div>
+                </c-card-footer>
+
+            </c-card>
+        </c-col>
+    </c-row>
+</c-modal>
+
+<c-modal [(visible)]="visible" [backdrop]="true" alignment="center" centered closeable>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{ top: { color: 'success', width: 5 } }" class="mb-3">
+                <c-card-header>
+                    <h5 cModalTitle>Yeni Malzeme Tipi Ekle</h5>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <form [formGroup]="malClassForm" (ngSubmit)="onSubmit()">
+                        <div class="mb-3">
+                            <select cSelect id="malTypeId" class="form-control" formControlName="malTypeId">
+                                <option *ngFor="let maltype of malTypes" [value]="maltype.id">
+                                    {{ maltype.name }}
+                                </option>
+                            </select>
+                            <!-- Hata Mesajı -->
+                            <div *ngIf="malClassForm.get('malTypeId')?.hasError('required') && (malClassForm.get('malTypeId')?.touched || submitted)"
+                                class="error-message">
+                                <strong cTextColor="danger">Tip Adı</strong> seçilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="name" class="form-control" formControlName="name"
+                                placeholder="Tip Adı" />
+                            <div *ngIf="malClassForm.get('name')?.hasError('required') && malClassForm.get('name')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Tip Adı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="code" class="form-control" formControlName="code"
+                                placeholder="Tip Kodu" />
+                            <div *ngIf="malClassForm.get('code')?.hasError('required') && malClassForm.get('code')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Tip Kodu</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="number" id="amount" class="form-control" formControlName="amount"
+                                placeholder="Kullanım Miktarı" />
+                            <div *ngIf="malClassForm.get('amount')?.hasError('required') && malClassForm.get('amount')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Kullanım Miktarı</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="url" class="form-control" formControlName="url" placeholder="Url" />
+                            <div *ngIf="malClassForm.get('url')?.hasError('required') && malClassForm.get('url')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Url</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="description" class="form-control" formControlName="description"
+                                placeholder="Açıklama giriniz."></textarea>
+                            <div *ngIf="malClassForm.get('description')?.hasError('required') && malClassForm.get('description')?.touched || submitted"
+                                class="error-message">
+                                <strong cTextColor="danger">Açıklama</strong> girilmesi zorunludur.
+                            </div>
+                        </div>
+                    </form>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton type="submit" [disabled]="malClassForm.invalid" color="success"
+                            variant="outline" (click)="saveNewMalClass()">Kaydet</button>
+                        <button cButton color="secondary" variant="outline" (click)="visible = false">İptal</button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-modal>
+
+
+<ng-template #MalClassTbl>
+    <table [hover]="true" [responsive]="true" [striped]="true" align="middle" cTable class="mb-0 border">
+        <thead class="text-nowrap text-truncate">
+            <tr>
+                <th class="bg-body-tertiary text-center">
+                    <svg cIcon name="cilPeople"></svg>
+                </th>
+                <th class="bg-body-tertiary">Tip Adı</th>
+                <th class="bg-body-tertiary">Sınıf Adı</th>
+                <th class="bg-body-tertiary text-center">Sınıf Kodu</th>
+                <th class="bg-body-tertiary">Kullanım</th>
+                <th class="bg-body-tertiary">Açıklama</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let malClass of filteredData; trackBy: trackById"
+                [cTableColor]="selectedMalClass === malClass.id ? 'warning' : ''" (click)="selectMalClass(malClass)">
+                <td class="text-center">
+                    <c-avatar [size]="'md'" [src]="malClass.url" status="success"></c-avatar>
+                </td>
+                <td>
+                    <div class="fw-semibold">{{ malClass.malTypeName }}</div>
+                    <div class="small text-body-secondary text-nowrap">
+                        <span>
+                            Ekleme Tarihi: {{ malClass.createdDate }}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <div class="fw-semibold">{{ malClass.name }}</div>
+                    <div class="small text-body-secondary text-nowrap">
+                        <span>
+                            Ekleme Tarihi: {{ malClass.createdDate }}
+                        </span>
+                    </div>
+                </td>
+                <td class="text-center fw-semibold">
+                    <div>{{ malClass.code }}</div>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-between">
+                        <div class="float-start">
+                            <strong>{{malClass.amount}}%</strong>
+                        </div>
+                        <div class="float-end ms-1 text-nowrap">
+                            <small class="text-body-secondary">Depo Kullanım Miktarı</small>
+                        </div>
+                    </div>
+                    <c-progress thin [value]="malClass.amount" color="success" aria-label="Usage"></c-progress>
+                </td>
+                <td>
+                    <div class="small text-body-secondary">Kullanımda</div>
+                    <div class="text-nowrap">{{ malClass.description }}</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</ng-template>

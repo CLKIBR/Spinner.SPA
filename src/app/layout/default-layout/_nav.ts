@@ -1,5 +1,6 @@
 import { INavData } from '@coreui/angular';
 
+
 export const navItems: INavData[] = [
   {
     name: 'Dashboard',
@@ -16,12 +17,12 @@ export const navItems: INavData[] = [
   },
   {
     name: 'Colors',
-    url: '/theme/colors',
+    url: 'views/theme/colors',
     iconComponent: { name: 'cil-drop' }
   },
   {
     name: 'Typography',
-    url: '/theme/typography',
+    url: 'views/theme/typography',
     linkProps: { fragment: 'headings' },
     iconComponent: { name: 'cil-pencil' }
   },
@@ -30,224 +31,174 @@ export const navItems: INavData[] = [
     title: true
   },
   {
-    name: 'Base',
-    url: '/base',
-    iconComponent: { name: 'cil-puzzle' },
+    name: 'Stok İşlemleri',
+    url: '/stock_transactions',
+    iconComponent: { name: 'cil-layers' },
     children: [
       {
-        name: 'Accordion',
-        url: '/base/accordion',
+        name: 'Giriş',
+        url: '/stock_transactions/login-operations',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Breadcrumbs',
-        url: '/base/breadcrumbs',
+        name: 'Çıkış',
+        url: '/stock_transactions/exit-operations',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Cards',
-        url: '/base/cards',
+        name: 'Transfer',
+        url: '/stock_transactions/transfer-operations',
         icon: 'nav-icon-bullet'
       },
-      {
-        name: 'Carousel',
-        url: '/base/carousel',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Collapse',
-        url: '/base/collapse',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'List Group',
-        url: '/base/list-group',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Navs & Tabs',
-        url: '/base/navs',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Pagination',
-        url: '/base/pagination',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Placeholder',
-        url: '/base/placeholder',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Popovers',
-        url: '/base/popovers',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Progress',
-        url: '/base/progress',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Spinners',
-        url: '/base/spinners',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Tables',
-        url: '/base/tables',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Tabs',
-        url: '/base/tabs',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Tooltips',
-        url: '/base/tooltips',
-        icon: 'nav-icon-bullet'
-      }
     ]
   },
   {
-    name: 'Buttons',
-    url: '/buttons',
-    iconComponent: { name: 'cil-cursor' },
+    name: 'Sipariş İşlemleri',
+    url: '/order_transactions',
+    iconComponent: { name: 'cil-basket' },
     children: [
       {
-        name: 'Buttons',
-        url: '/buttons/buttons',
+        name: 'Siparişler',
+        url: '/order_transactions/purchase-orders',
         icon: 'nav-icon-bullet'
       },
-      {
-        name: 'Button groups',
-        url: '/buttons/button-groups',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Dropdowns',
-        url: '/buttons/dropdowns',
-        icon: 'nav-icon-bullet'
-      }
     ]
   },
   {
-    name: 'Forms',
-    url: '/forms',
+    name: 'Raporlar',
+    url: '/reports',
     iconComponent: { name: 'cil-notes' },
     children: [
       {
-        name: 'Form Control',
-        url: '/forms/form-control',
+        name: 'Depo Durumu',
+        url: '/reports/warehouse-status-report',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Select',
-        url: '/forms/select',
+        name: 'Depo Hareketleri',
+        url: '/reports/warehouse-movement-report',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Checks & Radios',
-        url: '/forms/checks-radios',
+        name: 'Sipariş Raporu',
+        url: '/reports/order-reports-purchase',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Range',
-        url: '/forms/range',
+        name: 'Depo Yaşlandıma',
+        url: '/reports/warehouse-aging-report',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Input Group',
-        url: '/forms/input-group',
+        name: 'Etiket Sorgulama',
+        url: '/reports/tag-query',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'Floating Labels',
-        url: '/forms/floating-labels',
+        name: 'Stok Miktar Kontrol',
+        url: '/reports/stock-quantity-control',
         icon: 'nav-icon-bullet'
       },
-      {
-        name: 'Layout',
-        url: '/forms/layout',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Validation',
-        url: '/forms/validation',
-        icon: 'nav-icon-bullet'
-      }
     ]
   },
   {
-    name: 'Charts',
-    iconComponent: { name: 'cil-chart-pie' },
-    url: '/charts'
-  },
-  {
-    name: 'Icons',
-    iconComponent: { name: 'cil-star' },
-    url: '/icons',
+    name: 'Yönetim',
+    url: '/management',
+    iconComponent: { name: 'cil-user-follow' },
     children: [
       {
-        name: 'CoreUI Free',
-        url: '/icons/coreui-icons',
+        name: 'Kullanıcı Tanımla',
+        url: '/management/user-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Kullanıcı Hateketleri',
+        url: '/management/user-actions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Etiket Tasarımı',
+        url: '/management/label-design',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Etiket Paremetreleri',
+        url: '/management/label-parameters',
+        icon: 'nav-icon-bullet'
+      },
+    ]
+  },
+  {
+    name: 'Tanımlamalar',
+    iconComponent: { name: 'cil-applications-settings' },
+    url: '/definitions',
+    children: [
+      {
+        name: 'Malzeme Tipi',
+        url: '/definitions/material-type-definitions',
         icon: 'nav-icon-bullet',
-        badge: {
-          color: 'success',
-          text: 'FREE'
-        }
+        //badge: {color: 'success', text: 'FREE'}
       },
       {
-        name: 'CoreUI Flags',
-        url: '/icons/flags',
+        name: 'Malzeme Sınıfı',
+        url: '/definitions/material-class-definitions',
         icon: 'nav-icon-bullet'
       },
       {
-        name: 'CoreUI Brands',
-        url: '/icons/brands',
+        name: 'Malzeme Grubu',
+        url: '/definitions/material-group-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Malzeme Koleksiyonu',
+        url: '/definitions/material-collection-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Malzeme Numarası',
+        url: '/definitions/material-number-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Malzeme Değişkenleri',
+        url: '/definitions/material-descriptions',
+        icon: 'nav-icon-bullet',
+        //badge: {color: 'success', text: 'FREE'}
+      },
+      {
+        name: 'Malzeme Tanımı',
+        url: '/definitions/material-variables',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Müşteri Tanımı',
+        url: '/definitions/customer-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Depo Tanımı',
+        url: '/definitions/warehouse-definitions',
+        icon: 'nav-icon-bullet',
+        //badge: {color: 'success', text: 'FREE'}
+      },
+      {
+        name: 'Sarf Merkezi',
+        url: '/definitions/consumable-center-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Birim Tanımı',
+        url: '/definitions/unit-definitions',
+        icon: 'nav-icon-bullet'
+      },
+      {
+        name: 'Lokasyon Tanımı',
+        url: '/definitions/location-definitions',
         icon: 'nav-icon-bullet'
       }
     ]
   },
-  {
-    name: 'Notifications',
-    url: '/notifications',
-    iconComponent: { name: 'cil-bell' },
-    children: [
-      {
-        name: 'Alerts',
-        url: '/notifications/alerts',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Badges',
-        url: '/notifications/badges',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Modal',
-        url: '/notifications/modal',
-        icon: 'nav-icon-bullet'
-      },
-      {
-        name: 'Toast',
-        url: '/notifications/toasts',
-        icon: 'nav-icon-bullet'
-      }
-    ]
-  },
-  {
-    name: 'Widgets',
-    url: '/widgets',
-    iconComponent: { name: 'cil-calculator' },
-    badge: {
-      color: 'info',
-      text: 'NEW'
-    }
-  },
-  {
+  { 
     title: true,
     name: 'Extras'
   },

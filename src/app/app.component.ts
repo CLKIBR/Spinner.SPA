@@ -7,12 +7,15 @@ import { delay, filter, map, tap } from 'rxjs/operators';
 import { ColorModeService } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from './icons/icon-subset';
+import { AuthService } from './service/auth.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
   template: '<router-outlet />',
   standalone: true,
-  imports: [RouterOutlet]
+  imports: [RouterOutlet,HttpClientModule],
+  providers: [AuthService, Router]
 })
 export class AppComponent implements OnInit {
   title = 'Loom Edge';
@@ -25,7 +28,7 @@ export class AppComponent implements OnInit {
   readonly #colorModeService = inject(ColorModeService);
   readonly #iconSetService = inject(IconSetService);
 
-  constructor() {
+  constructor(private authService: AuthService, private router: Router) {
     this.#titleService.setTitle(this.title);
     // iconSet singleton
     this.#iconSetService.icons = { ...iconSubset };
@@ -34,15 +37,19 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Token kontrolü ve yenileme işlemleri
+    this.checkToken();
 
+    // Rota değişikliklerini dinleyen kod
     this.#router.events.pipe(
-        takeUntilDestroyed(this.#destroyRef)
-      ).subscribe((evt) => {
+      takeUntilDestroyed(this.#destroyRef)
+    ).subscribe((evt) => {
       if (!(evt instanceof NavigationEnd)) {
         return;
       }
     });
 
+    // Query parametrelerde "theme" kontrolü
     this.#activatedRoute.queryParams
       .pipe(
         delay(1),
@@ -54,5 +61,17 @@ export class AppComponent implements OnInit {
         takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe();
+  }
+
+  private checkToken(): void {
+    const token = this.authService.getToken(); // Token'ı al
+    if (!token || this.authService.isTokenExpired()) {
+      // Token yoksa veya süresi dolmuşsa logout yap ve login sayfasına yönlendir
+      this.authService.logout();
+      this.router.navigateByUrl('/login');
+    } else if (this.authService.isTokenCloseToExpiry()) {
+      // Token süresi dolmak üzereyse refreshToken yap
+      this.authService.refreshToken();
+    }
   }
 }

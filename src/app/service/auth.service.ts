@@ -1,41 +1,42 @@
 import { Injectable } from '@angular/core';
-import { LoginUser } from './../models/login-user';
-import { RegisterUser } from './../models/register-user';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { JwtHelperService } from '@auth0/angular-jwt';
 import { Router } from '@angular/router';
-import { AlertifyService } from './alertify.service';
+import { AlertifyService } from './alertify.service';  
+import { LoginUser } from '../models/login-user';  
+import { RegisterUser } from '../models/register-user'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  // API URL'inizi burada sabit olarak tanımladık
+  private readonly apiUrl = 'http://localhost:60805/api';  
+
+  private jwtHelper = new JwtHelperService();
+  private userToken: string | null = null;
+  private decodedToken: any = null;
 
   constructor(
     private httpClient: HttpClient,
     private router: Router,
-    private alertifyService: AlertifyService
+    private alertifyService: AlertifyService // Hata ve başarı mesajları için
   ) { }
 
-  path = "http://localhost:60805/api/Auth";
-  userToken: string | null = null;
-  decodedToken: any;
-  TOKEN_KEY = "token";
-  jwtHelper: JwtHelperService = new JwtHelperService();
-
-  login(loginUser: LoginUser) {
-    let headers = new HttpHeaders().set("Content-Type", "application/json");
-    this.httpClient.post(this.path + "/Login", loginUser, { headers }).subscribe({
+  // Giriş yapma (Login)
+  login(loginUser: LoginUser): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/Login`, loginUser, { headers }).subscribe({
       next: (data: any) => {
         const accessToken = data?.accessToken?.token;
         const expirationDate = data?.accessToken?.expirationDate;
         if (accessToken && expirationDate) {
           this.saveToken(accessToken);
-          localStorage.setItem("expiration", expirationDate); // ⚡ Eklenen Kod ⚡
+          localStorage.setItem("expiration", expirationDate); // Token'ın geçerlilik tarihi
           this.userToken = accessToken;
           this.decodedToken = this.jwtHelper.decodeToken(accessToken);
           this.alertifyService.success("Sisteme Giriş Yapıldı.");
-          this.router.navigateByUrl("/layout/default-layout.component");
+          this.router.navigateByUrl("/layout/default-layout.component");  // Yönlendirme
         } else {
           this.alertifyService.error("Giriş işlemi başarısız. Token alınamadı.");
         }
@@ -46,56 +47,168 @@ export class AuthService {
       },
     });
   }
-  
 
-  register(registerUser: RegisterUser) {
-    let headers = new HttpHeaders().set("Content-Type", "application/json");
-    this.httpClient
-      .post(this.path + '/Register', registerUser, { headers: headers })
-      .subscribe({
-        next: () => {
-          this.alertifyService.success('Kayıt başarılı.');
-          this.router.navigateByUrl('/login');
-        },
-        error: (err) => {
-          this.alertifyService.error('Kayıt başarısız. Lütfen tekrar deneyin.');
-          console.error(err);
+  // Kullanıcı kaydı (Register)
+  register(registerUser: RegisterUser): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/Register`, registerUser, { headers }).subscribe({
+      next: (data: any) => {
+        this.alertifyService.success("Kayıt işlemi başarılı.");
+        this.router.navigateByUrl("/auth/login");  // Kayıt sonrası giriş sayfasına yönlendirme
+      },
+      error: (err) => {
+        console.error("Register API hatası:", err);
+        this.alertifyService.error("Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.");
+      },
+    });
+  }
+
+  // Token yenileme (Refresh Token)
+  refreshToken(): void {
+    const refreshToken = this.getRefreshToken();  // Önceden kaydedilen refresh token
+    if (!refreshToken) {
+      this.alertifyService.error("Yenileme işlemi için geçerli bir refresh token bulunamadı.");
+      return;
+    }
+
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/RefreshToken`, { refreshToken }, { headers }).subscribe({
+      next: (data: any) => {
+        const accessToken = data?.accessToken?.token;
+        const expirationDate = data?.accessToken?.expirationDate;
+        if (accessToken && expirationDate) {
+          this.saveToken(accessToken);
+          localStorage.setItem("expiration", expirationDate); // Yeni token'ın geçerlilik tarihi
+          this.userToken = accessToken;
+          this.decodedToken = this.jwtHelper.decodeToken(accessToken);
+          this.alertifyService.success("Token başarıyla yenilendi.");
+        } else {
+          this.alertifyService.error("Token yenileme işlemi başarısız.");
         }
-      });
+      },
+      error: (err) => {
+        console.error("Refresh Token API hatası:", err);
+        this.alertifyService.error("Token yenileme başarısız.");
+      },
+    });
   }
 
-  saveToken(token: string | null) {
-    if (token) {
-      localStorage.setItem(this.TOKEN_KEY, token);
-    }
+  // Token iptal etme (Revoke Token)
+  revokeToken(): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/RevokeToken`, {}, { headers }).subscribe({
+      next: () => {
+        this.clearToken();
+        this.alertifyService.success("Token başarıyla iptal edildi.");
+        this.router.navigateByUrl("/auth/login");  // Token iptal edildikten sonra giriş sayfasına yönlendirme
+      },
+      error: (err) => {
+        console.error("Revoke Token API hatası:", err);
+        this.alertifyService.error("Token iptal işlemi başarısız.");
+      },
+    });
   }
 
-  logOut() {
-    localStorage.removeItem(this.TOKEN_KEY);
+  // E-posta doğrulaması başlatma (Enable Email Authenticator)
+  enableEmailAuthenticator(): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/EnableEmailAuthenticator`, {}, { headers }).subscribe({
+      next: () => {
+        this.alertifyService.success("E-posta doğrulama başarıyla başlatıldı.");
+      },
+      error: (err) => {
+        console.error("Email Authenticator API hatası:", err);
+        this.alertifyService.error("E-posta doğrulama başlatılamadı.");
+      },
+    });
+  }
+
+  // OTP doğrulaması başlatma (Enable OTP Authenticator)
+  enableOtpAuthenticator(): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/EnableOtpAuthenticator`, {}, { headers }).subscribe({
+      next: () => {
+        this.alertifyService.success("OTP doğrulama başarıyla başlatıldı.");
+      },
+      error: (err) => {
+        console.error("OTP Authenticator API hatası:", err);
+        this.alertifyService.error("OTP doğrulama başlatılamadı.");
+      },
+    });
+  }
+
+  // E-posta doğrulamasını doğrulama (Verify Email Authenticator)
+  verifyEmailAuthenticator(code: string): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/VerifyEmailAuthenticator`, { code }, { headers }).subscribe({
+      next: () => {
+        this.alertifyService.success("E-posta doğrulama başarıyla tamamlandı.");
+      },
+      error: (err) => {
+        console.error("Email Authenticator doğrulama hatası:", err);
+        this.alertifyService.error("E-posta doğrulama hatası.");
+      },
+    });
+  }
+
+  // OTP doğrulamasını doğrulama (Verify OTP Authenticator)
+  verifyOtpAuthenticator(code: string): void {
+    const headers = new HttpHeaders().set("Content-Type", "application/json");
+    this.httpClient.post(`${this.apiUrl}/Auth/VerifyOtpAuthenticator`, { code }, { headers }).subscribe({
+      next: () => {
+        this.alertifyService.success("OTP doğrulama başarıyla tamamlandı.");
+      },
+      error: (err) => {
+        console.error("OTP Authenticator doğrulama hatası:", err);
+        this.alertifyService.error("OTP doğrulama hatası.");
+      },
+    });
+  }
+
+  // Token'ı kaydetme
+  private saveToken(token: string): void {
+    localStorage.setItem("token", token);
+  }
+
+  // Token'ı temizleme
+  private clearToken(): void {
+    localStorage.removeItem("token");
     localStorage.removeItem("expiration");
-    this.alertifyService.message('Oturum kapatıldı.');
-    this.router.navigate(['/login']);
   }
 
-  loggedIn(): boolean {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    const expiration = localStorage.getItem("expiration");
-    if (!token || !expiration) {
-      return false;
-    }
-    const now = new Date().getTime();
-    const expirationTime = new Date(expiration).getTime();
-    return now < expirationTime;
+  // Geçerli token'ı alma
+  getToken(): string | null {
+    return localStorage.getItem("token");
   }
 
-  getCurrentUserId(): string | null {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    if (!token) return null;
-    try {
-      return this.jwtHelper.decodeToken(token).nameId;
-    } catch (error) {
-      console.error('Token çözümleme hatası:', error);
-      return null;
-    }
+  // Refresh token'ı alma (Varsa)
+  getRefreshToken(): string | null {
+    return localStorage.getItem("refreshToken");
+  }
+
+  isTokenCloseToExpiry(): boolean {
+    const expiration = localStorage.getItem('expiration');
+    if (!expiration) return false;
+  
+    const currentDate = new Date();
+    const expirationDate = new Date(expiration);
+  
+    // Süre dolmaya 5 dakikadan az kaldıysa
+    const diff = expirationDate.getTime() - currentDate.getTime();
+    return diff <= 5 * 60 * 1000; // 5 dakika
+  }
+
+  // Token'ın geçerliliğini kontrol etme
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    return this.jwtHelper.isTokenExpired(token);
+  }
+
+  // Çıkış yapma (Logout)
+  logout(): void {
+    this.clearToken();
+    this.alertifyService.success("Başarıyla çıkış yapıldı.");
+    this.router.navigateByUrl("/login");
   }
 }

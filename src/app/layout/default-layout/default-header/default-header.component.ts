@@ -1,5 +1,5 @@
 import { CommonModule, NgStyle, NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from 'src/app/service/auth.service';
 
@@ -62,7 +62,7 @@ import { HttpClientModule } from '@angular/common/http';
     ReactiveFormsModule, ModalModule, ButtonModule],
   providers: [AuthService,NgModel]
 })
-export class DefaultHeaderComponent extends HeaderComponent {
+export class DefaultHeaderComponent extends HeaderComponent implements OnInit{
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -82,8 +82,15 @@ export class DefaultHeaderComponent extends HeaderComponent {
     super();
   }
 
-  logOut() {
-    this.authService.logOut();
+  ngOnInit(): void {
+    // App yüklendiğinde token'ın geçerliliğini kontrol edebilirsiniz
+    if (this.authService.isTokenExpired()) {
+      this.authService.logout();
+    }
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   sidebarId = input('sidebar1');

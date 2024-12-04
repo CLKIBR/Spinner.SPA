@@ -1,50 +1,50 @@
-    <c-container breakpoint="xxl">
-        <c-row>
-            <c-col>
-                <c-card [cBorder]="{top: {color: 'primary', width: 5}}" class="mb-3">
+<c-container>
+    <c-row>
+        <c-col>
+            <c-card [cBorder]="{top: {color: 'primary', width: 5}}" class="mb-3">
 
-                    <c-card-header>
-                        <h5 cModalTitle>Malzeme Tip Tanımı</h5>
-                        <hr />
-                        <form cForm>
-                            <div class="d-grid gap-2 d-flex float-start mb-2">
-                                <div>
-                                    <input cFormControl type="text" name="nameFilter" [(ngModel)]="nameFilter"
-                                        (ngModelChange)="filterData()" placeholder="Tip Adı">
-                                </div>
-                                <div>
-                                    <input cFormControl type="text" name="codeFilter" [(ngModel)]="codeFilter"
-                                        (ngModelChange)="filterData()" placeholder="Tip Kodu">
-                                </div>
-                                <div>
-                                    <button cButton color="info" variant="outline" (click)="filterClean()">Temizle</button>
-                                </div>
+                <c-card-header>
+                    <h5 cModalTitle>Malzeme Tip Tanımı</h5>
+                    <hr />
+                    <form cForm>
+                        <div class="d-grid gap-2 d-flex float-start mb-2">
+                            <div>
+                                <input cFormControl type="text" name="nameFilter" [(ngModel)]="nameFilter"
+                                    (ngModelChange)="filterData()" placeholder="Tip Adı">
                             </div>
-                        </form>
-                    </c-card-header>
-                    <c-card-body class="modal-scrollable">
-                        <ng-container *ngTemplateOutlet="MalTypeTbl"></ng-container>
-                    </c-card-body>
-                    <c-card-footer>
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button cButton color="success" variant="outline"
-                                (click)="toggleNewMalTypeModal()">Ekle</button>
-
-                            <button cButton color="warning" variant="outline" (click)="editMalType()"
-                                [disabled]="!selectedMalType">
-                                Değiştir
-                            </button>
-
-                            <button cButton color="danger" variant="outline"
-                                (click)="deleteConfirmation(selectedMalType || null)" [disabled]="!selectedMalType">
-                                Sil
-                            </button>
+                            <div>
+                                <input cFormControl type="text" name="codeFilter" [(ngModel)]="codeFilter"
+                                    (ngModelChange)="filterData()" placeholder="Tip Kodu">
+                            </div>
+                            <div>
+                                <button cButton color="info" variant="outline" (click)="filterClean()">Temizle</button>
+                            </div>
                         </div>
-                    </c-card-footer>
-                </c-card>
-            </c-col>
-        </c-row>
-    </c-container>
+                    </form>
+                </c-card-header>
+                <c-card-body class="modal-scrollable">
+                    <ng-container *ngTemplateOutlet="MalTypeTbl"></ng-container>
+                </c-card-body>
+                <c-card-footer>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button cButton color="success" variant="outline"
+                            (click)="toggleNewMalTypeModal()">Ekle</button>
+
+                        <button cButton color="warning" variant="outline" (click)="editMalType()"
+                            [disabled]="!selectedMalType">
+                            Değiştir
+                        </button>
+
+                        <button cButton color="danger" variant="outline"
+                            (click)="deleteConfirmation(selectedMalType || null)" [disabled]="!selectedMalType">
+                            Sil
+                        </button>
+                    </div>
+                </c-card-footer>
+            </c-card>
+        </c-col>
+    </c-row>
+</c-container>
 
 <c-modal [(visible)]="isDeleteModalVisible" [backdrop]="true" alignment="center" centered closeable>
     <c-row>
@@ -145,65 +145,60 @@
 </c-modal>
 
 <c-modal [(visible)]="visible" [backdrop]="true" alignment="center" centered closeable>
-    <c-row>
-        <c-col>
-            <c-card [cBorder]="{ top: { color: 'success', width: 5 } }" class="mb-3">
-                <c-card-header>
-                    <h5 cModalTitle>Yeni Malzeme Tipi Ekle</h5>
-                </c-card-header>
-                <c-card-body class="modal-scrollable">
-                    <form [formGroup]="malTypeForm" (ngSubmit)="onSubmit()">
-                        <div class="mb-3">
-                            <input type="text" id="name" class="form-control" formControlName="name"
-                                placeholder="Tip Adı" />
-                            <div *ngIf="malTypeForm.get('name')?.hasError('required') && malTypeForm.get('name')?.touched || submitted"
-                                class="error-message">
-                                <strong cTextColor="danger">Tip Adı</strong> girilmesi zorunludur.
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <input type="text" id="code" class="form-control" formControlName="code"
-                                placeholder="Tip Kodu" />
-                            <div *ngIf="malTypeForm.get('code')?.hasError('required') && malTypeForm.get('code')?.touched || submitted"
-                                class="error-message">
-                                <strong cTextColor="danger">Tip Kodu</strong> girilmesi zorunludur.
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <input type="number" id="amount" class="form-control" formControlName="amount"
-                                placeholder="Kullanım Miktarı" />
-                            <div *ngIf="malTypeForm.get('amount')?.hasError('required') && malTypeForm.get('amount')?.touched || submitted"
-                                class="error-message">
-                                <strong cTextColor="danger">Kullanım Miktarı</strong> girilmesi zorunludur.
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <input type="text" id="url" class="form-control" formControlName="url" placeholder="Url" />
-                            <div *ngIf="malTypeForm.get('url')?.hasError('required') && malTypeForm.get('url')?.touched || submitted"
-                                class="error-message">
-                                <strong cTextColor="danger">Url</strong> girilmesi zorunludur.
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <textarea id="description" class="form-control" formControlName="description"
-                                placeholder="Açıklama giriniz."></textarea>
-                            <div *ngIf="malTypeForm.get('description')?.hasError('required') && malTypeForm.get('description')?.touched || submitted"
-                                class="error-message">
-                                <strong cTextColor="danger">Açıklama</strong> girilmesi zorunludur.
-                            </div>
-                        </div>
-                    </form>
-                </c-card-body>
-                <c-card-footer>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button cButton type="submit" [disabled]="malTypeForm.invalid" color="success" variant="outline"
-                            (click)="saveNewMalType()">Kaydet</button>
-                        <button cButton color="secondary" variant="outline" (click)="visible = false">İptal</button>
+
+    <c-card [cBorder]="{ top: { color: 'success', width: 5 } }" class="mb-3">
+        <c-card-header>
+            <h5 cModalTitle>Yeni Malzeme Tipi Ekle</h5>
+        </c-card-header>
+        <c-card-body class="modal-scrollable">
+            <form [formGroup]="malTypeForm" (ngSubmit)="onSubmit()">
+                <div class="mb-3">
+                    <input type="text" id="name" class="form-control" formControlName="name" placeholder="Tip Adı" />
+                    <div *ngIf="malTypeForm.get('name')?.hasError('required') && malTypeForm.get('name')?.touched || submitted"
+                        class="error-message">
+                        <strong cTextColor="danger">Tip Adı</strong> girilmesi zorunludur.
                     </div>
-                </c-card-footer>
-            </c-card>
-        </c-col>
-    </c-row>
+                </div>
+                <div class="mb-3">
+                    <input type="text" id="code" class="form-control" formControlName="code" placeholder="Tip Kodu" />
+                    <div *ngIf="malTypeForm.get('code')?.hasError('required') && malTypeForm.get('code')?.touched || submitted"
+                        class="error-message">
+                        <strong cTextColor="danger">Tip Kodu</strong> girilmesi zorunludur.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <input type="number" id="amount" class="form-control" formControlName="amount"
+                        placeholder="Kullanım Miktarı" />
+                    <div *ngIf="malTypeForm.get('amount')?.hasError('required') && malTypeForm.get('amount')?.touched || submitted"
+                        class="error-message">
+                        <strong cTextColor="danger">Kullanım Miktarı</strong> girilmesi zorunludur.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <input type="text" id="url" class="form-control" formControlName="url" placeholder="Url" />
+                    <div *ngIf="malTypeForm.get('url')?.hasError('required') && malTypeForm.get('url')?.touched || submitted"
+                        class="error-message">
+                        <strong cTextColor="danger">Url</strong> girilmesi zorunludur.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <textarea id="description" class="form-control" formControlName="description"
+                        placeholder="Açıklama giriniz."></textarea>
+                    <div *ngIf="malTypeForm.get('description')?.hasError('required') && malTypeForm.get('description')?.touched || submitted"
+                        class="error-message">
+                        <strong cTextColor="danger">Açıklama</strong> girilmesi zorunludur.
+                    </div>
+                </div>
+            </form>
+        </c-card-body>
+        <c-card-footer>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button cButton type="submit" [disabled]="malTypeForm.invalid" color="success" variant="outline"
+                    (click)="saveNewMalType()">Kaydet</button>
+                <button cButton color="secondary" variant="outline" (click)="visible = false">İptal</button>
+            </div>
+        </c-card-footer>
+    </c-card>
 </c-modal>
 
 
